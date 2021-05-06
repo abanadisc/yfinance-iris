@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26" zv="IRIS for Windows (x86-64) 2021.1.0PYTHON (Build 207U)" ts="2021-05-06 15:02:37">
+<Class name="YFinance.HistoricalDaily">
+<Super>%Persistent</Super>
+<TimeChanged>65870,53933.5459377</TimeChanged>
+<TimeCreated>65863,39798.0637552</TimeCreated>
+
+<Property name="Date">
+<Type>%Date</Type>
+</Property>
+
+<Property name="Open">
+<Type>%Float</Type>
+</Property>
+
+<Property name="High">
+<Type>%Float</Type>
+</Property>
+
+<Property name="Low">
+<Type>%Float</Type>
+</Property>
+
+<Property name="Close">
+<Type>%Float</Type>
+</Property>
+
+<Property name="AdjClose">
+<Type>%Float</Type>
+</Property>
+
+<Property name="Volume">
+<Type>%Integer</Type>
+</Property>
+
+<Property name="Symbol">
+<Type>%String</Type>
+</Property>
+
+<Index name="SymbolDateIndex">
+<Properties>Symbol,Date</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Load">
+<Description>
+Loads daily historical data into the YFinance.HistoricalDaily table</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>symbol:%String="SPY",startDate:%String="2020-01-01",endDate:%String="2021-01-01"</FormalSpec>
+<Language>python</Language>
+<Implementation><![CDATA[
+	import yfinance
+	import iris
+	
+	#switch to ODBC selectmode so that we can insert dates in ODBC format
+	iris.cls('%SYSTEM.SQL').SetSelectMode(1)
+	
+	df = yfinance.download(symbol, start=startDate, end=endDate)
+	columns = "\"Symbol\",\"Date\",\""+"\",\"".join([str(column).replace(" ","") for column in df.columns.tolist()])+"\""
+	for date, row in df.iterrows():
+		values = ("'"+symbol+"','"+str(date.date())+"','"+"','".join([str(value) for value in row.to_list()])+"'")
+		sql_query = "INSERT OR UPDATE INTO YFinance.HistoricalDaily ("+columns+") VALUES ("+values+")"
+		rs = iris.sql.exec(sql_query)
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Storage.Persistent</Type>
+<DataLocation>^YFinance.HistoricalDailyD</DataLocation>
+<DefaultData>HistoricalDailyDefaultData</DefaultData>
+<IdLocation>^YFinance.HistoricalDailyD</IdLocation>
+<IndexLocation>^YFinance.HistoricalDailyI</IndexLocation>
+<StreamLocation>^YFinance.HistoricalDailyS</StreamLocation>
+<Data name="HistoricalDailyDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Date</Value>
+</Value>
+<Value name="3">
+<Value>Open</Value>
+</Value>
+<Value name="4">
+<Value>High</Value>
+</Value>
+<Value name="5">
+<Value>Low</Value>
+</Value>
+<Value name="6">
+<Value>Close</Value>
+</Value>
+<Value name="7">
+<Value>AdjClose</Value>
+</Value>
+<Value name="8">
+<Value>Volume</Value>
+</Value>
+<Value name="9">
+<Value>Symbol</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>
